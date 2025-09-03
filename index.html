@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contador de gestos (OpenCV.js + MediaPipe)</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons (para iconografía ligera) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Estilos externos -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- OpenCV ready marker (debe existir antes de cargar opencv.js) -->
+  <script>
+  window.cvReady = false;                    // bandera global para saber si OpenCV ya terminó de inicializar
+  function __markCvReady(){                  // función llamada cuando el runtime WASM de OpenCV está listo
+    window.cvReady = true;                   // marcamos que OpenCV está listo
+    const el = document.getElementById('cv-ind'); // buscamos el indicador visual "OpenCV" en la UI
+    el?.classList.add('ok');                 // si existe, encendemos el estado "ok" (punto verde animado)
+    el?.classList.remove('no');              // y quitamos el estado "no"
+  }
+</script>
+
+</head>
+<body class="grid-overlay">
+  <!-- NAV superior -->
+  <nav class="navbar nav-blur sticky-top">
+    <div class="container">
+      <span class="navbar-brand d-flex align-items-center gap-2">
+        <i class="bi bi-activity"></i>
+        <span class="fw-semibold">Contador de gestos</span>
+      </span>
+      <span class="badge badge-soft px-3 py-2 d-none d-md-inline">
+        <i class="bi bi-cpu me-1"></i> OpenCV.js &nbsp;•&nbsp; MediaPipe FaceMesh
+      </span>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h1 class="h3 mb-0 title-grad">Visión por computadora en tiempo real</h1>
+      <span class="badge badge-soft px-3 py-2 d-md-none">
+        <i class="bi bi-cpu me-1"></i> OpenCV.js · FaceMesh
+      </span>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="app-card p-3">
+          <div class="video-wrap">
+            <video id="video" playsinline muted></video>
+            <canvas id="overlay"></canvas>
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center justify-content-between mt-3 gap-2">
+            <div class="d-flex align-items-center gap-3">
+              <span class="small-muted">
+                <span id="cam-ind" class="dot no"></span>Cámara
+              </span>
+              <span class="small-muted">
+                <span id="face-ind" class="dot no"></span>Rostro
+              </span>
+              <span class="small-muted">
+                <span id="cv-ind" class="dot no"></span>OpenCV
+              </span>
+            </div>
+            <div class="monospace pill">
+              <i class="bi bi-speedometer2 me-1"></i> FPS: <span id="fps">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips en móvil -->
+        <div class="d-lg-none mt-3 tip">
+          <div class="small-muted">
+            <strong><i class="bi bi-lightbulb me-1 text-warning"></i>Consejos</strong>
+            <ul class="mb-0 mt-2">
+              <li>Buena iluminación frontal.</li>
+              <li>Rostro centrado a ~50–70 cm.</li>
+              <li>Tras iniciar hay <em>auto-calibración</em> breve con boca cerrada.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="app-card p-3 h-100">
+          <div class="mb-3">
+            <label class="form-label small-muted mb-1">
+              <i class="bi bi-camera-video me-1"></i>Cámara
+            </label>
+            <select id="deviceSel" class="form-select"></select>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="metric-card text-center">
+                <div class="metric">
+                  <i class="bi bi-eye-slash metric-icon"></i><span id="blinkCount">0</span>
+                </div>
+                <div class="metric-label">Parpadeos</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="metric-card text-center">
+                <div class="metric">
+                  <i class="bi bi-emoji-smile metric-icon"></i><span id="mouthCount">0</span>
+                </div>
+                <div class="metric-label">Bocas abiertas</div>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="metric-card text-center">
+                <div class="metric">
+                  <i class="bi bi-chevron-bar-contract metric-icon"></i><span id="browCount">0</span>
+                </div>
+                <div class="metric-label">Cejas levantadas</div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="d-grid gap-2">
+            <button id="startBtn" class="btn btn-primary">
+              <i class="bi bi-play-fill me-1"></i> Iniciar cámara
+            </button>
+            <button id="stopBtn" class="btn btn-outline-light">
+              <i class="bi bi-stop-fill me-1"></i> Detener cámara
+            </button>
+            <button id="calBtn" class="btn btn-warning text-dark">
+              <i class="bi bi-magic me-1"></i> Calibrar (2–3 s boca cerrada)
+            </button>
+            <button id="resetBtn" class="btn btn-outline-light">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Reiniciar contadores
+            </button>
+          </div>
+
+          <div class="mt-3 d-none d-lg-block">
+            <div class="tip">
+              <div class="small-muted">
+                <strong><i class="bi bi-lightbulb me-1 text-warning"></i>Consejos</strong>
+                <ul class="mb-0 mt-2">
+                  <li>Buena iluminación frontal.</li>
+                  <li>Rostro centrado a ~50–70 cm.</li>
+                  <li>Tras iniciar hay <em>auto-calibración</em> breve con boca cerrada.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 small-muted monospace" id="dbgMar">
+            ÁreaN: — | EMA: — | base: — | thrOpen: — | thrClose: —
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="mt-4 footer-note d-flex align-items-center gap-2">
+      <i class="bi bi-shield-lock"></i>
+      Privacidad: todo el procesamiento ocurre en tu navegador.
+    </p>
+  </main>
+
+  <!-- OpenCV.js (WASM) -->
+  <script async src="https://docs.opencv.org/4.x/opencv.js" onload="cv && (cv['onRuntimeInitialized']=__markCvReady)"></script>
+
+  <!-- MediaPipe (Drawing, FaceMesh) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+  <!-- Bootstrap bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Tu lógica original (externa, sin cambios funcionales) -->
+  <script src="app.js"></script>
+</body>
+</html>

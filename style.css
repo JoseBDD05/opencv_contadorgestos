@@ -1,0 +1,158 @@
+:root{
+  --bg-0:#070b1a;
+  --bg-1:rgba(14, 22, 49, .65);          /* glass */
+  --stroke:#1f2a4b;
+  --txt:#e8eefc;
+  --muted:#9fb3de;
+  --brand:#6ea8fe;
+  --brand-2:#a78bfa;
+  --ok:#34d399;
+  --no:#ef4444;
+  --warn:#fbbf24;
+
+  --glow-1: 0 0 20px rgba(110,168,254,.25), 0 0 40px rgba(167,139,250,.15);
+  --glass: backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  --radius: 16px;
+}
+
+/* Fondo gradiente animado + malla sutil */
+body{
+  min-height:100vh;
+  color:var(--txt);
+  background:
+    radial-gradient(1200px 800px at 10% -10%, rgba(110,168,254,.12), transparent 60%),
+    radial-gradient(1200px 800px at 110% 10%, rgba(167,139,250,.10), transparent 60%),
+    linear-gradient(180deg, #060a1a 0%, #0b1020 60%, #0a0e1d 100%);
+  background-attachment: fixed;
+}
+.grid-overlay::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(60% 50% at 50% 30%, rgba(0,0,0,.75), transparent 80%);
+  pointer-events:none;
+  z-index:-1;
+}
+
+.nav-blur{
+  background: linear-gradient( to bottom, rgba(6,10,26,.75), rgba(6,10,26,.35) );
+  border-bottom: 1px solid var(--stroke);
+  box-shadow: var(--glow-1);
+  --glass-blur: blur(10px);
+}
+
+.app-card{
+  background: var(--bg-1);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  --glass-blur: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25), var(--glow-1);
+}
+
+.badge-soft{
+  background: rgba(24,38,82,.55);
+  border: 1px solid #2a3a6b;
+  color: var(--txt);
+  border-radius: 999px;
+}
+
+.video-wrap { 
+  position: relative;          /* contenedor referencia */
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+canvas {
+  position: absolute;          /* ⚠️ clave: encima del video */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;                /* asegura overlay del mismo tamaño */
+  border-radius: 12px;
+  pointer-events: none;        /* no bloquear clics */
+  z-index: 2;
+}
+
+video {
+  display: block;              /* evita espacios fantasmas */
+  width: 100%;
+  background: #000;
+  border-radius: 12px;
+  z-index: 1;
+}
+
+.btn-primary{
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  border: 0;
+  box-shadow: var(--glow-1);
+}
+.btn-outline-light{ border-color:#33416a; color:#e7ecff; }
+.btn-outline-light:hover{ background:#182652; }
+
+.video-wrap{ position:relative; width:100%; max-width: 960px; margin: 0 auto; }
+video, canvas{ width:100%; border-radius: 12px; }
+video{ background:#000; }
+
+/* Indicadores de estado (con pulso) */
+.dot{
+  width:10px; height:10px; border-radius:50%;
+  display:inline-block; margin-right:8px; box-shadow:0 0 0 0 rgba(52,211,153,.6); transform: scale(1);
+}
+.dot.ok{ background: var(--ok); animation: pulseOk 1.8s infinite; }
+.dot.no{ background: var(--no);  animation: pulseNo 2s infinite; }
+@keyframes pulseOk{ 0%{ box-shadow:0 0 0 0 rgba(52,211,153,.6) } 70%{ box-shadow:0 0 0 10px rgba(52,211,153,0) } 100%{ box-shadow:0 0 0 0 rgba(52,211,153,0) } }
+@keyframes pulseNo{ 0%{ box-shadow:0 0 0 0 rgba(239,68,68,.5) } 70%{ box-shadow:0 0 0 10px rgba(239,68,68,0) } 100%{ box-shadow:0 0 0 0 rgba(239,68,68,0) } }
+
+.small-muted{ color: var(--muted); font-size:.9rem; }
+.monospace{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+.metric-card{
+  border:1px solid var(--stroke);
+  border-radius: 14px;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(20,30,60,.6), rgba(14,22,49,.55));
+}
+.metric{
+  font-size: 2.2rem; font-weight:800; letter-spacing:.5px;
+  text-shadow: 0 0 18px rgba(110,168,254,.35);
+}
+.metric-label{ color:var(--muted); margin-top:-2px; font-size:.9rem; }
+.metric-icon{
+  font-size: 1.25rem;
+  color: var(--brand);
+  vertical-align: middle;
+  margin-right:.35rem;
+  opacity:.9;
+}
+
+hr{ border-color:#2a3a6b; opacity:.6; }
+
+.footer-note{ color: var(--muted); font-size:.85rem; }
+
+/* Panel lateral pequeño para tips */
+.tip{
+  background: rgba(15,24,50,.65);
+  border: 1px dashed #2a3a6b;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+/* Encabezado de página */
+.title-grad{
+  background: linear-gradient(90deg, #e8eefc, #c9d6ff 35%, #ccb8ff 70%);
+  -webkit-background-clip: text;
+  background-clip:text;
+  color: transparent;
+  text-shadow: 0 0 18px rgba(110,168,254,.25);
+}
+
+/* FPS pill */
+.pill{
+  background: rgba(12,20,44,.7);
+  border:1px solid #2a3a6b;
+  border-radius:999px;
+  padding:6px 12px;
+}
